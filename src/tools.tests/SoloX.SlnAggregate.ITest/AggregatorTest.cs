@@ -17,6 +17,7 @@ namespace SoloX.SlnAggregate.ITest
             aggregator.GenerateSolution();
 
             Assert.True(File.Exists(@"Resources/RootSln1/RootSln1.sln"));
+            Assert.True(File.Exists(@"Resources/RootSln1/RootSln1.guid.cache"));
             Assert.True(File.Exists(@"Resources/RootSln1/SlnLib1/Lib1/Lib1.Shadow.csproj"));
             Assert.True(File.Exists(@"Resources/RootSln1/SlnLib2/Lib2/Lib2.Shadow.csproj"));
         }
@@ -51,6 +52,26 @@ namespace SoloX.SlnAggregate.ITest
                 shadowText);
             Assert.Contains(
                 "<AssemblyName>Lib1</AssemblyName>",
+                shadowText);
+        }
+
+        [Fact]
+        public void It_should_replace_the_package_ref_by_project_ref_when_posible()
+        {
+            var aggregator = new Aggregator();
+
+            aggregator.Setup(@"Resources/RootSln1");
+
+            aggregator.GenerateSolution();
+
+            Assert.True(File.Exists(@"Resources/RootSln1/SlnLib2/Lib2/Lib2.Shadow.csproj"));
+
+            var shadowText = File.ReadAllText(@"Resources/RootSln1/SlnLib2/Lib2/Lib2.Shadow.csproj");
+            Assert.Contains(
+                @"<ProjectReference Include=""..\..\SlnLib1\Lib1\Lib1.Shadow.csproj"" />",
+                shadowText);
+            Assert.Contains(
+                @"<PackageReference Include=""Another.Package"" Version=""1.2.3"" />",
                 shadowText);
         }
     }

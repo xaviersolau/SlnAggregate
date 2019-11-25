@@ -1,4 +1,5 @@
-﻿using SoloX.SlnAggregate.Models;
+﻿using Newtonsoft.Json;
+using SoloX.SlnAggregate.Models;
 using SoloX.SlnAggregate.Package;
 using System;
 using System.Collections.Generic;
@@ -86,6 +87,13 @@ namespace SoloX.SlnAggregate
 
         public void GenerateSolution()
         {
+            var solutionFileName = Path.GetFileName(Path.TrimEndingDirectorySeparator(RootPath));
+
+            var slnFile = Path.Combine(RootPath, $"{solutionFileName}.sln");
+            var cacheFile = Path.Combine(RootPath, $"{solutionFileName}.guid.cache");
+
+            var guidProjectCache = LoadGuidProjectCache(cacheFile);
+
             var resPath = Path.GetDirectoryName(typeof(Aggregator).Assembly.Location);
 
             var projectTmpl = File.ReadAllText(Path.Combine(resPath, "Resources", "PROJECT.tmpl"));
@@ -109,7 +117,7 @@ namespace SoloX.SlnAggregate
 
                 foreach (var csProject in csFolder.Projects)
                 {
-                    var shadow = GenerateShadow(csProject, RootPath, this.PackageDeclarations);
+                    var shadow = GenerateShadow(csProject, RootPath, this.PackageDeclarations, guidProjectCache);
 
                     projects.Append(projectTmpl
                         .Replace("%%PROJECT%%", shadow.Name)
@@ -135,14 +143,36 @@ namespace SoloX.SlnAggregate
             slnTmpl = slnTmpl
                 .Replace("%%SLNGUID%%", Guid.NewGuid().ToString());
 
-            var solutionFileName = Path.GetFileName(Path.TrimEndingDirectorySeparator(RootPath));
-            File.WriteAllText(Path.Combine(RootPath, $"{solutionFileName}.sln"), slnTmpl);
+            File.WriteAllText(slnFile, slnTmpl);
+
+            SaveGuidProjectCache(cacheFile, guidProjectCache);
+        }
+
+        private void SaveGuidProjectCache(string cacheFile, IDictionary<string, Guid> guidProjectCache)
+        {
+            using var fileWriter = File.CreateText(cacheFile);
+            var serializer = new JsonSerializer();
+            serializer.Formatting = Newtonsoft.Json.Formatting.Indented;
+            serializer.Serialize(fileWriter, guidProjectCache);
+        }
+
+        private IDictionary<string, Guid> LoadGuidProjectCache(string cacheFile)
+        {
+            if (File.Exists(cacheFile))
+            {
+                using var fileReader = File.OpenText(cacheFile);
+                var serializer = new JsonSerializer();
+                return (IDictionary<string, Guid>)serializer.Deserialize(fileReader, typeof(Dictionary<string, Guid>));
+            }
+
+            return new Dictionary<string, Guid>();
         }
 
         private static Project GenerateShadow(
             Project csProject,
             string path,
-            IReadOnlyDictionary<string, PackageDeclaration> nugets)
+            IReadOnlyDictionary<string, PackageDeclaration> nugets,
+            IDictionary<string, Guid> guidProjectCache)
         {
             var shadowPath = csProject.RelativePath.Replace(CsprojExt, ShadowCsprojExt);
 
@@ -169,7 +199,15 @@ namespace SoloX.SlnAggregate
             xmlProj.WriteTo(xmlWriter);
 
             xmlWriter.Flush();
-            return new Project(shadowPath);
+
+            if (!guidProjectCache.TryGetValue(shadowPath, out var guid))
+            {
+                guid = Guid.NewGuid();
+
+                guidProjectCache.Add(shadowPath, guid);
+            }
+
+            return new Project(shadowPath, guid);
         }
 
         private static void SetupAssemblyName(Project csProject, XDocument xmlProj)

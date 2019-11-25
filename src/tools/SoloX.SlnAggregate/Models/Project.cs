@@ -11,9 +11,14 @@ namespace SoloX.SlnAggregate.Models
     public class Project
     {
         public Project(string path)
+            : this(path, Guid.NewGuid())
+        {
+        }
+
+        public Project(string path, Guid guid)
         {
             RelativePath = path;
-            Guid = Guid.NewGuid();
+            Guid = guid;
             Name = Path.GetFileNameWithoutExtension(RelativePath);
         }
 
