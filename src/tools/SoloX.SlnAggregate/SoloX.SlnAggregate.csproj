@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+
+    <PackageId>SoloX.SlnAggregate</PackageId>
+
+    <AssemblyName>dotnet-SlnAggregate</AssemblyName>
+
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Resources\CONFIG.tmpl" />
+    <None Remove="Resources\FOLDER.tmpl" />
+    <None Remove="Resources\NESTED.tmpl" />
+    <None Remove="Resources\PROJECT.tmpl" />
+    <None Remove="Resources\SLN.tmpl" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Resources\PROJECT.tmpl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\FOLDER.tmpl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\CONFIG.tmpl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\NESTED.tmpl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\SLN.tmpl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>
