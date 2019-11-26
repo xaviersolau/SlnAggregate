@@ -1,14 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="../../SharedProperties.props" />
+
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.0</TargetFramework>
 
     <PackageId>SoloX.SlnAggregate</PackageId>
 
-    <AssemblyName>dotnet-SlnAggregate</AssemblyName>
-
     <NoPackageAnalysis>true</NoPackageAnalysis>
+
+    <PackageTags>tool, solution, csproj, sln, aggregate</PackageTags>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <Description>Aggregate all projects from several solutions in a global solution replacing package references by project references when possible.</Description>
+
+    <AssemblyName>dotnet-SlnAggregate</AssemblyName>
 
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>

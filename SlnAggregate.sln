@@ -5,7 +5,14 @@ VisualStudioVersion = 16.0.29403.142
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SoloX.SlnAggregate", "src\tools\SoloX.SlnAggregate\SoloX.SlnAggregate.csproj", "{21BA2683-DAD7-4FB9-84E2-AE81380AAEDB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoloX.SlnAggregate.ITest", "src\tools.tests\SoloX.SlnAggregate.ITest\SoloX.SlnAggregate.ITest.csproj", "{5AC47676-E671-43FC-B0BF-96C5C072577D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SoloX.SlnAggregate.ITest", "src\tools.tests\SoloX.SlnAggregate.ITest\SoloX.SlnAggregate.ITest.csproj", "{5AC47676-E671-43FC-B0BF-96C5C072577D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{1E0EE2B1-2B7B-4355-BE3A-704F2E1E14EB}"
+	ProjectSection(SolutionItems) = preProject
+		LICENSE = LICENSE
+		README.md = README.md
+		src\SharedProperties.props = src\SharedProperties.props
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
