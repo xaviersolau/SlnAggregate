@@ -3,6 +3,13 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+
+src/tools/SoloX.SlnAggregate/SoloX.SlnAggregate.xml
+src/tools.tests/SoloX.SlnAggregate.ITest/SoloX.SlnAggregate.ITest.xml
+
+
+
+
 # User-specific files
 *.suo
 *.user

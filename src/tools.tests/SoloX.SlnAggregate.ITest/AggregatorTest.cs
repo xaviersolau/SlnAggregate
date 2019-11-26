@@ -1,3 +1,10 @@
+// ----------------------------------------------------------------------
+// <copyright file="AggregatorTest.cs" company="SoloX Software">
+// Copyright (c) SoloX Software. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// </copyright>
+// ----------------------------------------------------------------------
+
 using System;
 using System.IO;
 using System.Linq;
@@ -49,10 +56,12 @@ namespace SoloX.SlnAggregate.ITest
             var shadowText = File.ReadAllText(@"Resources/RootSln1/SlnLib1/Lib1/Lib1.Shadow.csproj");
             Assert.Contains(
                 "<RootNamespace>Lib1</RootNamespace>",
-                shadowText);
+                shadowText,
+                StringComparison.InvariantCulture);
             Assert.Contains(
                 "<AssemblyName>Lib1</AssemblyName>",
-                shadowText);
+                shadowText,
+                StringComparison.InvariantCulture);
         }
 
         [Fact]
@@ -69,10 +78,12 @@ namespace SoloX.SlnAggregate.ITest
             var shadowText = File.ReadAllText(@"Resources/RootSln1/SlnLib2/Lib2/Lib2.Shadow.csproj");
             Assert.Contains(
                 @"<ProjectReference Include=""..\..\SlnLib1\Lib1\Lib1.Shadow.csproj"" />",
-                shadowText);
+                shadowText,
+                StringComparison.InvariantCulture);
             Assert.Contains(
                 @"<PackageReference Include=""Another.Package"" Version=""1.2.3"" />",
-                shadowText);
+                shadowText,
+                StringComparison.InvariantCulture);
         }
     }
 }

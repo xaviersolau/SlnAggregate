@@ -1,6 +1,10 @@
-﻿using Newtonsoft.Json;
-using SoloX.SlnAggregate.Models;
-using SoloX.SlnAggregate.Package;
+﻿// ----------------------------------------------------------------------
+// <copyright file="Aggregator.cs" company="SoloX Software">
+// Copyright (c) SoloX Software. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// </copyright>
+// ----------------------------------------------------------------------
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,25 +13,53 @@ using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
+using Newtonsoft.Json;
+using SoloX.SlnAggregate.Models;
+using SoloX.SlnAggregate.Package;
 
 namespace SoloX.SlnAggregate
 {
+    /// <summary>
+    /// Aggregator implementation that is generating a unique solution file containing all projects
+    /// from all sub-repositories.
+    /// </summary>
     public class Aggregator
     {
         private const string CsprojFilePattern = "*.csproj";
         private const string CsprojExt = ".csproj";
         private const string ShadowCsprojExt = ".Shadow.csproj";
 
+        /// <summary>
+        /// Gets root path where to generate the aggregated solution and where to find the repositories.
+        /// </summary>
         public string RootPath { get; private set; }
 
+        /// <summary>
+        /// Gets solution repositories loaded from the root folder.
+        /// </summary>
         public IReadOnlyList<SolutionRepository> SolutionRepositories { get; private set; }
 
+        /// <summary>
+        /// Gets all sub-projects.
+        /// </summary>
         public IReadOnlyList<Project> AllProjects { get; private set; }
 
+        /// <summary>
+        /// Gets the sub-package declarations.
+        /// </summary>
         public IReadOnlyDictionary<string, PackageDeclaration> PackageDeclarations { get; private set; }
 
+        /// <summary>
+        /// Setup the current Aggregator instance with the given root folder.
+        /// </summary>
+        /// <param name="rootPath">The root folder where to find solution assets.</param>
         public void Setup(string rootPath)
         {
+            if (rootPath == null)
+            {
+                throw new ArgumentNullException($"{nameof(rootPath)} must not be null.");
+            }
+
             this.RootPath = rootPath;
 
             this.SolutionRepositories = this.LoadSolutionRepositories();
@@ -37,60 +69,15 @@ namespace SoloX.SlnAggregate
             this.PackageDeclarations = this.ScanPackageDeclarations();
         }
 
-        private List<SolutionRepository> LoadSolutionRepositories()
-        {
-            var slnRepositoryFolders = Directory.EnumerateDirectories(
-                RootPath,
-                "*",
-                SearchOption.TopDirectoryOnly
-            ).ToArray();
-
-            var slnRepositories = new List<SolutionRepository>();
-
-            foreach (var slnRepositoryFolder in slnRepositoryFolders)
-            {
-                var projects = new List<Project>();
-
-                var prjFiles = Directory.EnumerateFiles(
-                    slnRepositoryFolder,
-                    CsprojFilePattern,
-                    SearchOption.AllDirectories
-                )
-                .Where(p => !p.EndsWith(ShadowCsprojExt, StringComparison.InvariantCultureIgnoreCase))
-                .ToArray();
-
-
-                foreach (var prjFile in prjFiles)
-                {
-                    var relativePath = Path.GetRelativePath(RootPath, prjFile);
-                    projects.Add(new Project(relativePath));
-                }
-
-                if (projects.Any())
-                {
-                    slnRepositories.Add(new SolutionRepository(slnRepositoryFolder.Replace(RootPath, string.Empty), projects));
-                }
-            }
-
-            return slnRepositories;
-        }
-
-        private Dictionary<string, PackageDeclaration> ScanPackageDeclarations()
-        {
-            var nugets = new Dictionary<string, PackageDeclaration>();
-
-            new NuspecScanner().Scan(this, nugets);
-            new CsprojScanner().Scan(this, nugets);
-
-            return nugets;
-        }
-
+        /// <summary>
+        /// Generate the aggregated solution.
+        /// </summary>
         public void GenerateSolution()
         {
-            var solutionFileName = Path.GetFileName(Path.TrimEndingDirectorySeparator(RootPath));
+            var solutionFileName = Path.GetFileName(Path.TrimEndingDirectorySeparator(this.RootPath));
 
-            var slnFile = Path.Combine(RootPath, $"{solutionFileName}.sln");
-            var cacheFile = Path.Combine(RootPath, $"{solutionFileName}.guid.cache");
+            var slnFile = Path.Combine(this.RootPath, $"{solutionFileName}.sln");
+            var cacheFile = Path.Combine(this.RootPath, $"{solutionFileName}.guid.cache");
 
             var guidProjectCache = LoadGuidProjectCache(cacheFile);
 
@@ -111,44 +98,42 @@ namespace SoloX.SlnAggregate
             foreach (var csFolder in this.SolutionRepositories)
             {
                 folders.Append(folderTmpl
-                    .Replace("%%FOLDER%%", csFolder.Name)
-                    .Replace("%%FOLDERGUID%%", csFolder.Guid.ToString())
-                );
+                    .Replace("%%FOLDER%%", csFolder.Name, StringComparison.InvariantCulture)
+                    .Replace("%%FOLDERGUID%%", csFolder.Id.ToString(), StringComparison.InvariantCulture));
 
                 foreach (var csProject in csFolder.Projects)
                 {
-                    var shadow = GenerateShadow(csProject, RootPath, this.PackageDeclarations, guidProjectCache);
+                    var shadow = GenerateShadow(csProject, this.RootPath, this.PackageDeclarations, guidProjectCache);
 
                     projects.Append(projectTmpl
-                        .Replace("%%PROJECT%%", shadow.Name)
-                        .Replace("%%PROJECTPATH%%", shadow.RelativePath)
-                        .Replace("%%PROJECTGUID%%", shadow.Guid.ToString())
-                    );
+                        .Replace("%%PROJECT%%", shadow.Name, StringComparison.InvariantCulture)
+                        .Replace("%%PROJECTPATH%%", shadow.RelativePath, StringComparison.InvariantCulture)
+                        .Replace("%%PROJECTGUID%%", shadow.Id.ToString(), StringComparison.InvariantCulture));
+
                     configs.Append(configTmpl
-                        .Replace("%%PROJECTGUID%%", shadow.Guid.ToString())
-                    );
+                        .Replace("%%PROJECTGUID%%", shadow.Id.ToString(), StringComparison.InvariantCulture));
+
                     nestedList.Append(nestedTmpl
-                        .Replace("%%PROJECTGUID%%", shadow.Guid.ToString())
-                        .Replace("%%FOLDERGUID%%", csFolder.Guid.ToString())
-                    );
+                        .Replace("%%PROJECTGUID%%", shadow.Id.ToString(), StringComparison.InvariantCulture)
+                        .Replace("%%FOLDERGUID%%", csFolder.Id.ToString(), StringComparison.InvariantCulture));
                 }
             }
 
             slnTmpl = slnTmpl
-                .Replace("##PROJECTS##", projects.ToString())
-                .Replace("##FOLDERS##", folders.ToString())
-                .Replace("##CONFIGS##", configs.ToString())
-                .Replace("##NESTED##", nestedList.ToString());
+                .Replace("##PROJECTS##", projects.ToString(), StringComparison.InvariantCulture)
+                .Replace("##FOLDERS##", folders.ToString(), StringComparison.InvariantCulture)
+                .Replace("##CONFIGS##", configs.ToString(), StringComparison.InvariantCulture)
+                .Replace("##NESTED##", nestedList.ToString(), StringComparison.InvariantCulture);
 
             slnTmpl = slnTmpl
-                .Replace("%%SLNGUID%%", Guid.NewGuid().ToString());
+                .Replace("%%SLNGUID%%", Guid.NewGuid().ToString(), StringComparison.InvariantCulture);
 
             File.WriteAllText(slnFile, slnTmpl);
 
             SaveGuidProjectCache(cacheFile, guidProjectCache);
         }
 
-        private void SaveGuidProjectCache(string cacheFile, IDictionary<string, Guid> guidProjectCache)
+        private static void SaveGuidProjectCache(string cacheFile, IDictionary<string, Guid> guidProjectCache)
         {
             using var fileWriter = File.CreateText(cacheFile);
             var serializer = new JsonSerializer();
@@ -156,7 +141,7 @@ namespace SoloX.SlnAggregate
             serializer.Serialize(fileWriter, guidProjectCache);
         }
 
-        private IDictionary<string, Guid> LoadGuidProjectCache(string cacheFile)
+        private static IDictionary<string, Guid> LoadGuidProjectCache(string cacheFile)
         {
             if (File.Exists(cacheFile))
             {
@@ -174,7 +159,7 @@ namespace SoloX.SlnAggregate
             IReadOnlyDictionary<string, PackageDeclaration> nugets,
             IDictionary<string, Guid> guidProjectCache)
         {
-            var shadowPath = csProject.RelativePath.Replace(CsprojExt, ShadowCsprojExt);
+            var shadowPath = csProject.RelativePath.Replace(CsprojExt, ShadowCsprojExt, StringComparison.InvariantCulture);
 
             using var projectFileStream = File.OpenRead(Path.Combine(path, csProject.RelativePath));
             var xmlProj = XDocument.Load(projectFileStream);
@@ -250,7 +235,7 @@ namespace SoloX.SlnAggregate
 
                     foreach (var nugetSpecProject in nugetSpec.Projects)
                     {
-                        var prjPath = nugetSpecProject.RelativePath.Replace(CsprojExt, ShadowCsprojExt);
+                        var prjPath = nugetSpecProject.RelativePath.Replace(CsprojExt, ShadowCsprojExt, StringComparison.InvariantCulture);
 
                         prjPath = Path.GetRelativePath(
                             Path.GetDirectoryName(Path.Combine(path, csProject.RelativePath)),
@@ -286,8 +271,59 @@ namespace SoloX.SlnAggregate
             {
                 var includeAttr = projectReference.Attribute(XName.Get("Include"));
                 var includeValue = includeAttr.Value;
-                includeAttr.Value = includeValue.Replace(CsprojExt, ShadowCsprojExt);
+                includeAttr.Value = includeValue.Replace(CsprojExt, ShadowCsprojExt, StringComparison.InvariantCulture);
             }
+        }
+
+        private List<SolutionRepository> LoadSolutionRepositories()
+        {
+            var slnRepositoryFolders = Directory.EnumerateDirectories(
+                this.RootPath,
+                "*",
+                SearchOption.TopDirectoryOnly).ToArray();
+
+            var slnRepositories = new List<SolutionRepository>();
+
+            foreach (var slnRepositoryFolder in slnRepositoryFolders)
+            {
+                var projects = new List<Project>();
+
+                var prjFiles = Directory.EnumerateFiles(
+                    slnRepositoryFolder,
+                    CsprojFilePattern,
+                    SearchOption.AllDirectories)
+                    .Where(p => !p.EndsWith(ShadowCsprojExt, StringComparison.InvariantCultureIgnoreCase))
+                    .ToArray();
+
+                foreach (var prjFile in prjFiles)
+                {
+                    var relativePath = Path.GetRelativePath(this.RootPath, prjFile);
+                    projects.Add(new Project(relativePath));
+                }
+
+                if (projects.Any())
+                {
+                    slnRepositories.Add(
+                        new SolutionRepository(
+                            slnRepositoryFolder.Replace(
+                                this.RootPath,
+                                string.Empty,
+                                StringComparison.InvariantCulture),
+                            projects));
+                }
+            }
+
+            return slnRepositories;
+        }
+
+        private Dictionary<string, PackageDeclaration> ScanPackageDeclarations()
+        {
+            var nugets = new Dictionary<string, PackageDeclaration>();
+
+            new NuspecScanner().Scan(this, nugets);
+            new CsprojScanner().Scan(this, nugets);
+
+            return nugets;
         }
     }
 }

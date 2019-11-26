@@ -1,4 +1,11 @@
-﻿using System;
+﻿// ----------------------------------------------------------------------
+// <copyright file="NuspecScanner.cs" company="SoloX Software">
+// Copyright (c) SoloX Software. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// </copyright>
+// ----------------------------------------------------------------------
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,17 +15,27 @@ using SoloX.SlnAggregate.Models;
 namespace SoloX.SlnAggregate.Package
 {
     /// <summary>
-    /// Nuspec scanner.
+    /// Nuspec file scanner.
     /// </summary>
     public class NuspecScanner : IPackageScanner
     {
+        /// <inheritdoc/>
         public void Scan(Aggregator aggregator, Dictionary<string, PackageDeclaration> output)
         {
+            if (aggregator == null || aggregator.RootPath == null)
+            {
+                throw new ArgumentNullException($"{nameof(aggregator)} or one of its property must not be null.");
+            }
+
+            if (output == null)
+            {
+                throw new ArgumentNullException($"{nameof(output)} must not be null.");
+            }
+
             var nugetFiles = Directory.EnumerateFiles(
                 aggregator.RootPath,
                 "*.nuspec",
-                SearchOption.AllDirectories
-            ).ToArray();
+                SearchOption.AllDirectories).ToArray();
 
             foreach (var nugetFile in nugetFiles)
             {
