@@ -77,7 +77,7 @@ namespace SoloX.SlnAggregate.ITest
 
             var shadowText = File.ReadAllText(@"Resources/RootSln1/SlnLib2/Lib2/Lib2.Shadow.csproj");
             Assert.Contains(
-                @"<ProjectReference Include=""..\..\SlnLib1\Lib1\Lib1.Shadow.csproj"" />",
+                @$"<ProjectReference Include=""{Path.Combine("..", "..", "SlnLib1", "Lib1", "Lib1.Shadow.csproj")}"" />",
                 shadowText,
                 StringComparison.InvariantCulture);
             Assert.Contains(
