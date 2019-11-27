@@ -33,6 +33,7 @@ namespace SoloX.SlnAggregate
 
             sc.AddLogging(b => b.AddConsole());
             sc.AddSingleton(configuration);
+            sc.AddSlnAggregate();
 
             this.Service = sc.BuildServiceProvider();
 
@@ -69,7 +70,7 @@ namespace SoloX.SlnAggregate
                 return -1;
             }
 
-            var aggregator = new Aggregator();
+            var aggregator = this.Service.GetService<IAggregator>();
 
             aggregator.Setup(path);
 
