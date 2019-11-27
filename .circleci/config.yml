@@ -22,7 +22,7 @@ jobs:
             dotnet tool install coveralls.net --version 1.0.0 --tool-path coveralls
 
             cd src/tools.tests/SoloX.SlnAggregate.ITest
-            dotnet test -c Release --no-build -p:CollectCoverage=true -p:Exclude=\"[xunit.*]*,[SoloX.*.Sample]*,[SoloX.*.UTest]*,[SoloX.*.ITest]*\" -p:MergeWith="../../../result.coverlet.json" -p:CoverletOutput="../../../result.opencover.xml" -p:CoverletOutputFormat="opencover"
+            dotnet test -c Release --no-build -p:CollectCoverage=true -p:Exclude=\"[xunit.*]*,[SoloX.*.Sample]*,[SoloX.*.UTest]*,[SoloX.*.ITest]*\" -p:CoverletOutput="../../../result.opencover.xml" -p:CoverletOutputFormat="opencover"
             cd ../../..
 
             mkdir coverage
