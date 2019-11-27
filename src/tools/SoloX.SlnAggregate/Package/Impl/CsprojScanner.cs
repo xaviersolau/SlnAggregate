@@ -14,7 +14,7 @@ using System.Xml.Linq;
 using System.Xml.XPath;
 using SoloX.SlnAggregate.Models;
 
-namespace SoloX.SlnAggregate.Package
+namespace SoloX.SlnAggregate.Package.Impl
 {
     /// <summary>
     /// Csproj file package scanner.
@@ -22,7 +22,7 @@ namespace SoloX.SlnAggregate.Package
     public class CsprojScanner : IPackageScanner
     {
         /// <inheritdoc/>
-        public void Scan(Aggregator aggregator, Dictionary<string, PackageDeclaration> output)
+        public void Scan(IAggregator aggregator, Dictionary<string, PackageDeclaration> output)
         {
             if (aggregator == null || aggregator.AllProjects == null)
             {

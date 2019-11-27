@@ -12,7 +12,7 @@ using System.Linq;
 using System.Text;
 using SoloX.SlnAggregate.Models;
 
-namespace SoloX.SlnAggregate.Package
+namespace SoloX.SlnAggregate.Package.Impl
 {
     /// <summary>
     /// Nuspec file scanner.
@@ -20,7 +20,7 @@ namespace SoloX.SlnAggregate.Package
     public class NuspecScanner : IPackageScanner
     {
         /// <inheritdoc/>
-        public void Scan(Aggregator aggregator, Dictionary<string, PackageDeclaration> output)
+        public void Scan(IAggregator aggregator, Dictionary<string, PackageDeclaration> output)
         {
             if (aggregator == null || aggregator.RootPath == null)
             {

@@ -17,42 +17,42 @@ using Newtonsoft.Json;
 using SoloX.SlnAggregate.Models;
 using SoloX.SlnAggregate.Package;
 
-namespace SoloX.SlnAggregate
+namespace SoloX.SlnAggregate.Impl
 {
     /// <summary>
     /// Aggregator implementation that is generating a unique solution file containing all projects
     /// from all sub-repositories.
     /// </summary>
-    public class Aggregator
+    public class Aggregator : IAggregator
     {
         private const string CsprojFilePattern = "*.csproj";
         private const string CsprojExt = ".csproj";
         private const string ShadowCsprojExt = ".Shadow.csproj";
 
+        private readonly IEnumerable<IPackageScanner> packageScanners;
+
         /// <summary>
-        /// Gets root path where to generate the aggregated solution and where to find the repositories.
+        /// Initializes a new instance of the <see cref="Aggregator"/> class.
         /// </summary>
+        /// <param name="packageScanners">The package scanner to use to detect packages.</param>
+        public Aggregator(IEnumerable<IPackageScanner> packageScanners)
+        {
+            this.packageScanners = packageScanners;
+        }
+
+        /// <inheritdoc/>
         public string RootPath { get; private set; }
 
-        /// <summary>
-        /// Gets solution repositories loaded from the root folder.
-        /// </summary>
+        /// <inheritdoc/>
         public IReadOnlyList<SolutionRepository> SolutionRepositories { get; private set; }
 
-        /// <summary>
-        /// Gets all sub-projects.
-        /// </summary>
+        /// <inheritdoc/>
         public IReadOnlyList<Project> AllProjects { get; private set; }
 
-        /// <summary>
-        /// Gets the sub-package declarations.
-        /// </summary>
+        /// <inheritdoc/>
         public IReadOnlyDictionary<string, PackageDeclaration> PackageDeclarations { get; private set; }
 
-        /// <summary>
-        /// Setup the current Aggregator instance with the given root folder.
-        /// </summary>
-        /// <param name="rootPath">The root folder where to find solution assets.</param>
+        /// <inheritdoc/>
         public void Setup(string rootPath)
         {
             if (rootPath == null)
@@ -69,9 +69,7 @@ namespace SoloX.SlnAggregate
             this.PackageDeclarations = this.ScanPackageDeclarations();
         }
 
-        /// <summary>
-        /// Generate the aggregated solution.
-        /// </summary>
+        /// <inheritdoc/>
         public void GenerateSolution()
         {
             var solutionFileName = Path.GetFileName(Path.TrimEndingDirectorySeparator(this.RootPath));
@@ -320,8 +318,10 @@ namespace SoloX.SlnAggregate
         {
             var nugets = new Dictionary<string, PackageDeclaration>();
 
-            new NuspecScanner().Scan(this, nugets);
-            new CsprojScanner().Scan(this, nugets);
+            foreach (var scanner in this.packageScanners)
+            {
+                scanner.Scan(this, nugets);
+            }
 
             return nugets;
         }
