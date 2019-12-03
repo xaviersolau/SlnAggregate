@@ -10,6 +10,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Xml;
+using System.Xml.Linq;
+using System.Xml.XPath;
 using SoloX.SlnAggregate.Models;
 
 namespace SoloX.SlnAggregate.Package.Impl
@@ -39,14 +42,61 @@ namespace SoloX.SlnAggregate.Package.Impl
 
             foreach (var nugetFile in nugetFiles)
             {
-                var nugetName = Path.GetFileNameWithoutExtension(nugetFile);
+                var nuspecFileName = Path.GetFileNameWithoutExtension(nugetFile);
+                var nugetName = nuspecFileName;
+
+                using var nugetFileStream = File.OpenRead(nugetFile);
+                var xmlReader = XmlReader.Create(nugetFileStream);
+                var xmlProj = XDocument.Load(xmlReader);
+
+                var packageId = xmlProj.XPathSelectElements(
+                    "/n:package/n:metadata/n:id",
+                    new NsResolver(
+                        new Dictionary<string, string>()
+                        {
+                            { "n", "http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd" },
+                        }))
+                    .SingleOrDefault();
+
+                if (packageId != null)
+                {
+                    nugetName = packageId.Value;
+                }
 
                 // match with the project name
-                var prj = aggregator.AllProjects.Where(p => p.Name == nugetName).FirstOrDefault();
+                var prj = aggregator.AllProjects.Where(p => p.Name == nugetName || p.Name == nuspecFileName).FirstOrDefault();
                 if (prj != null && !output.ContainsKey(nugetName))
                 {
                     output.Add(nugetName, new PackageDeclaration(nugetFile, nugetName, new[] { prj }));
                 }
+            }
+        }
+
+        private class NsResolver : IXmlNamespaceResolver
+        {
+            private IDictionary<string, string> nsMap;
+
+            public NsResolver(IDictionary<string, string> nsMap)
+            {
+                this.nsMap = nsMap;
+            }
+
+            public IDictionary<string, string> GetNamespacesInScope(XmlNamespaceScope scope)
+            {
+                return this.nsMap;
+            }
+
+            public string LookupNamespace(string prefix)
+            {
+                return this.nsMap[prefix];
+            }
+
+            public string LookupPrefix(string namespaceName)
+            {
+                return this.nsMap
+                    .Where(kv => kv.Value == namespaceName)
+                    .Select(kv => kv.Key)
+                    .FirstOrDefault();
             }
         }
     }
