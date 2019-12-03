@@ -15,25 +15,14 @@ using Xunit;
 
 namespace SoloX.SlnAggregate.UTest.Package
 {
-    public class CsprojPackageScannerTest
+    public class CsprojPackageScannerTest : APackageScannerTest
     {
         [Fact]
         public void It_should_find_the_package_id_from_the_csproj_file()
         {
             var scanner = new CsprojScanner();
-            var scanResult = new Dictionary<string, PackageDeclaration>();
 
-            var project = new Project("./Resources/Lib1.csproj");
-
-            var aggregatorMock = new Mock<IAggregator>();
-            aggregatorMock.SetupGet(a => a.AllProjects).Returns(new[] { project });
-            aggregatorMock.SetupGet(a => a.RootPath).Returns(".");
-
-            scanner.Scan(aggregatorMock.Object, scanResult);
-
-            Assert.NotEmpty(scanResult);
-
-            Assert.True(scanResult.ContainsKey("PackageLib1"));
+            RunAndAssertScannerTest(scanner, "PackageLib1", "./Resources", "./Lib1/Lib1.csproj");
         }
     }
 }
