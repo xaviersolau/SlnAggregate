@@ -8,23 +8,16 @@ jobs:
       - run:
           name: Install coveralls
           command: |
-            
             apt-get update
-            
             apt-get install unzip
             
             curl -o dotnet-install.sh https://dotnetwebsite.azurewebsites.net/download/dotnet-core/scripts/v1/dotnet-install.sh
             chmod +x dotnet-install.sh
             export TERM=linux
-            
-            dotnet --list-runtimes
-            
             ./dotnet-install.sh --runtime dotnet --channel 2.1 --version latest --install-dir /usr/share/dotnet
             
-            dotnet --list-runtimes
-            
             dotnet tool install coveralls.net --version 1.0.0 --tool-path coveralls
-            
+
       - run:
           name: Build the projects
           command: |
@@ -40,9 +33,13 @@ jobs:
       - run:
           name: Run Code coverage
           command: |
+            
+            cd src/tools.tests/SoloX.SlnAggregate.UTest
+            dotnet test -c Release --no-build -p:CollectCoverage=true -p:Exclude=\"[xunit.*]*,[SoloX.*.Sample]*,[SoloX.*.UTest]*,[SoloX.*.ITest]*\" -p:MergeWith="../../../result.coverlet.json" -p:CoverletOutput="../../../result.coverlet.json"
+            cd ../../..
 
             cd src/tools.tests/SoloX.SlnAggregate.ITest
-            dotnet test -c Release --no-build -p:CollectCoverage=true -p:Exclude=\"[xunit.*]*,[SoloX.*.Sample]*,[SoloX.*.UTest]*,[SoloX.*.ITest]*\" -p:CoverletOutput="../../../result.opencover.xml" -p:CoverletOutputFormat="opencover"
+            dotnet test -c Release --no-build -p:CollectCoverage=true -p:Exclude=\"[xunit.*]*,[SoloX.*.Sample]*,[SoloX.*.UTest]*,[SoloX.*.ITest]*\" -p:MergeWith="../../../result.coverlet.json" -p:CoverletOutput="../../../result.opencover.xml" -p:CoverletOutputFormat="opencover"
             cd ../../..
 
             mkdir coverage

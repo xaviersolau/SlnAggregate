@@ -6,6 +6,7 @@
 
 src/tools/SoloX.SlnAggregate/SoloX.SlnAggregate.xml
 src/tools.tests/SoloX.SlnAggregate.ITest/SoloX.SlnAggregate.ITest.xml
+src/tools.tests/SoloX.SlnAggregate.UTest/SoloX.SlnAggregate.UTest.xml
 
 
 
