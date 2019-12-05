@@ -12,6 +12,8 @@ using Microsoft.Extensions.DependencyInjection;
 using SoloX.SlnAggregate.Impl;
 using SoloX.SlnAggregate.Package;
 using SoloX.SlnAggregate.Package.Impl;
+using SoloX.SlnAggregate.Services;
+using SoloX.SlnAggregate.Services.Impl;
 
 namespace SoloX.SlnAggregate
 {
@@ -29,6 +31,7 @@ namespace SoloX.SlnAggregate
         {
             return services
                 .AddTransient<IAggregator, Aggregator>()
+                .AddTransient<IShadowProjectService, ShadowProjectService>()
                 .AddTransient<IPackageScanner, CsprojScanner>()
                 .AddTransient<IPackageScanner, NuspecScanner>();
         }

@@ -10,12 +10,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Xml;
-using System.Xml.Linq;
-using System.Xml.XPath;
 using Newtonsoft.Json;
 using SoloX.SlnAggregate.Models;
 using SoloX.SlnAggregate.Package;
+using SoloX.SlnAggregate.Services;
 
 namespace SoloX.SlnAggregate.Impl
 {
@@ -26,18 +24,21 @@ namespace SoloX.SlnAggregate.Impl
     public class Aggregator : IAggregator
     {
         private const string CsprojFilePattern = "*.csproj";
-        private const string CsprojExt = ".csproj";
-        private const string ShadowCsprojExt = ".Shadow.csproj";
 
         private readonly IEnumerable<IPackageScanner> packageScanners;
+        private readonly IShadowProjectService shadowProjectService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Aggregator"/> class.
         /// </summary>
         /// <param name="packageScanners">The package scanner to use to detect packages.</param>
-        public Aggregator(IEnumerable<IPackageScanner> packageScanners)
+        /// <param name="shadowProjectService">The shadow project service to handle the project file generation.</param>
+        public Aggregator(
+            IEnumerable<IPackageScanner> packageScanners,
+            IShadowProjectService shadowProjectService)
         {
             this.packageScanners = packageScanners;
+            this.shadowProjectService = shadowProjectService;
         }
 
         /// <inheritdoc/>
@@ -101,7 +102,7 @@ namespace SoloX.SlnAggregate.Impl
 
                 foreach (var csProject in csFolder.Projects)
                 {
-                    var shadow = GenerateShadow(csProject, this.RootPath, this.PackageDeclarations, guidProjectCache);
+                    var shadow = this.GenerateShadow(csProject, guidProjectCache);
 
                     projects.Append(projectTmpl
                         .Replace("%%PROJECT%%", shadow.Name, StringComparison.InvariantCulture)
@@ -151,37 +152,11 @@ namespace SoloX.SlnAggregate.Impl
             return new Dictionary<string, Guid>();
         }
 
-        private static Project GenerateShadow(
+        private Project GenerateShadow(
             Project csProject,
-            string path,
-            IReadOnlyDictionary<string, PackageDeclaration> nugets,
             IDictionary<string, Guid> guidProjectCache)
         {
-            var shadowPath = csProject.RelativePath.Replace(CsprojExt, ShadowCsprojExt, StringComparison.InvariantCulture);
-
-            using var projectFileStream = File.OpenRead(Path.Combine(path, csProject.RelativePath));
-            var xmlProj = XDocument.Load(projectFileStream);
-
-            // Update project references
-            UpdateProjectReferencesWithShadows(xmlProj);
-
-            // Convert package references
-            ConvertPackageReferences(csProject, path, nugets, xmlProj);
-
-            // Setup root name-space
-            SetupRootNamespace(csProject, xmlProj);
-
-            // Setup assembly name
-            SetupAssemblyName(csProject, xmlProj);
-
-            using var output = File.Create(Path.Combine(path, shadowPath));
-            using var xmlWriter = XmlWriter.Create(output, new XmlWriterSettings() { Indent = true, });
-
-            Console.Out.WriteLine($"Writing {shadowPath}");
-
-            xmlProj.WriteTo(xmlWriter);
-
-            xmlWriter.Flush();
+            var shadowPath = this.shadowProjectService.GenerateShadow(this, csProject);
 
             if (!guidProjectCache.TryGetValue(shadowPath, out var guid))
             {
@@ -191,86 +166,6 @@ namespace SoloX.SlnAggregate.Impl
             }
 
             return new Project(shadowPath, guid);
-        }
-
-        private static void SetupAssemblyName(Project csProject, XDocument xmlProj)
-        {
-            var assemblyName = xmlProj.XPathSelectElements("/Project/PropertyGroup/AssemblyName").SingleOrDefault();
-            if (assemblyName == null)
-            {
-                var pGrp = xmlProj.XPathSelectElements("/Project/PropertyGroup").First();
-                pGrp.Add(XDocument.Parse($"<AssemblyName>{csProject.Name}</AssemblyName>").Root);
-            }
-        }
-
-        private static void SetupRootNamespace(Project csProject, XDocument xmlProj)
-        {
-            var rootNamespace = xmlProj.XPathSelectElements("/Project/PropertyGroup/RootNamespace").SingleOrDefault();
-
-            if (rootNamespace == null)
-            {
-                var pGrp = xmlProj.XPathSelectElements("/Project/PropertyGroup").First();
-                pGrp.Add(XDocument.Parse($"<RootNamespace>{csProject.Name}</RootNamespace>").Root);
-            }
-        }
-
-        private static void ConvertPackageReferences(
-            Project csProject,
-            string path,
-            IReadOnlyDictionary<string, PackageDeclaration> nugets,
-            XDocument xmlProj)
-        {
-            var packageReferences = xmlProj.XPathSelectElements("/Project/ItemGroup/PackageReference");
-            foreach (var packageReference in packageReferences.ToArray())
-            {
-                var includeAttr = packageReference.Attribute(XName.Get("Include"));
-                var includeValue = includeAttr.Value;
-
-                if (nugets.TryGetValue(includeValue, out var nugetSpec))
-                {
-                    // Replace the package ref with a project ref
-                    packageReference.Remove();
-
-                    foreach (var nugetSpecProject in nugetSpec.Projects)
-                    {
-                        var prjPath = nugetSpecProject.RelativePath.Replace(CsprojExt, ShadowCsprojExt, StringComparison.InvariantCulture);
-
-                        prjPath = Path.GetRelativePath(
-                            Path.GetDirectoryName(Path.Combine(path, csProject.RelativePath)),
-                            Path.Combine(path, prjPath));
-
-                        AddProjectReference(xmlProj, XDocument.Parse($"<ProjectReference Include=\"{prjPath}\" />").Root);
-                    }
-                }
-            }
-        }
-
-        private static void AddProjectReference(XDocument xmlProj, XElement projectRefNode)
-        {
-            var projectReferenceNode = xmlProj.XPathSelectElements("/Project/ItemGroup/ProjectReference").FirstOrDefault();
-            if (projectReferenceNode == null)
-            {
-                var projectReferenceItemGroupNode = XDocument.Parse($"<ItemGroup></ItemGroup>").Root;
-                projectReferenceItemGroupNode.Add(projectRefNode);
-                var lastPropertyGroup = xmlProj.XPathSelectElements("/Project/PropertyGroup").Last();
-                lastPropertyGroup.AddAfterSelf(projectReferenceItemGroupNode);
-            }
-            else
-            {
-                var projectReferenceItemGroupNode = projectReferenceNode.Parent;
-                projectReferenceItemGroupNode.Add(projectRefNode);
-            }
-        }
-
-        private static void UpdateProjectReferencesWithShadows(XDocument xmlProj)
-        {
-            var projectReferences = xmlProj.XPathSelectElements("/Project/ItemGroup/ProjectReference");
-            foreach (var projectReference in projectReferences)
-            {
-                var includeAttr = projectReference.Attribute(XName.Get("Include"));
-                var includeValue = includeAttr.Value;
-                includeAttr.Value = includeValue.Replace(CsprojExt, ShadowCsprojExt, StringComparison.InvariantCulture);
-            }
         }
 
         private List<SolutionRepository> LoadSolutionRepositories()
@@ -290,7 +185,7 @@ namespace SoloX.SlnAggregate.Impl
                     slnRepositoryFolder,
                     CsprojFilePattern,
                     SearchOption.AllDirectories)
-                    .Where(p => !p.EndsWith(ShadowCsprojExt, StringComparison.InvariantCultureIgnoreCase))
+                    .Where(p => !this.shadowProjectService.IsShadowProjectFile(p))
                     .ToArray();
 
                 foreach (var prjFile in prjFiles)
