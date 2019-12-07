@@ -6,7 +6,7 @@
     <AssemblyName>Lib2</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Lib1\Lib1.Shadow.csproj" />
+    <ProjectReference Include="../Lib1/Lib1.Shadow.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Another.Package" Version="1.2.3" />

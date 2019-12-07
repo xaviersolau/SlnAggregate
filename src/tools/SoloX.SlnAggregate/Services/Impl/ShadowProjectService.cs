@@ -128,6 +128,8 @@ namespace SoloX.SlnAggregate.Services.Impl
                             Path.GetDirectoryName(Path.Combine(path, csProject.RelativePath)),
                             Path.Combine(path, prjPath));
 
+                        prjPath = prjPath.Replace("\\", "/", StringComparison.InvariantCulture);
+
                         AddProjectReference(xmlProj, XDocument.Parse($"<ProjectReference Include=\"{prjPath}\" />").Root);
                     }
                 }

@@ -26,6 +26,10 @@ jobs:
       - run:
           name: Run Unit Tests
           command: |
+            cd src/tools.tests/SoloX.SlnAggregate.UTest
+            dotnet test -c Release --no-build
+            cd ../../..
+
             cd src/tools.tests/SoloX.SlnAggregate.ITest
             dotnet test -c Release --no-build
             cd ../../..
