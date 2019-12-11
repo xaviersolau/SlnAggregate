@@ -15,6 +15,7 @@ using Moq;
 using SoloX.CodeQuality.Test.Helpers;
 using SoloX.SlnAggregate.Models;
 using SoloX.SlnAggregate.Services.Impl;
+using SoloX.SlnAggregate.UTest.Utils;
 using Xunit;
 
 namespace SoloX.SlnAggregate.UTest.Services
@@ -24,15 +25,21 @@ namespace SoloX.SlnAggregate.UTest.Services
         [Fact]
         public void It_should_generate_a_shadow_project_file()
         {
+            var projectPath = "./Lib2/Lib2.csproj";
+            var rootPath = "./Resources";
+
             var snapshotName = nameof(this.It_should_generate_a_shadow_project_file);
             var packages = new Dictionary<string, PackageDeclaration>();
 
-            this.GenerateShadowAndAssertSnapshot(packages, snapshotName);
+            this.GenerateShadowAndAssertSnapshot(rootPath, projectPath, packages, snapshotName);
         }
 
         [Fact]
         public void It_should_generate_a_shadow_project_file_with_package_replacement()
         {
+            var projectPath = "./Lib2/Lib2.csproj";
+            var rootPath = "./Resources";
+
             var snapshotName = nameof(this.It_should_generate_a_shadow_project_file_with_package_replacement);
             var packages = new Dictionary<string, PackageDeclaration>();
 
@@ -40,36 +47,14 @@ namespace SoloX.SlnAggregate.UTest.Services
             var packageId = "PackageLib1";
             var packageProject = new Project(packageProjectPath);
 
-            packages.Add(packageId, new PackageDeclaration(packageProjectPath, packageId, new Project[] { packageProject }));
+            packages.Add(packageId, new PackageDeclaration(packageProjectPath, packageId, "1.0.0", new Project[] { packageProject }));
 
-            this.GenerateShadowAndAssertSnapshot(packages, snapshotName);
+            this.GenerateShadowAndAssertSnapshot(rootPath, projectPath, packages, snapshotName);
         }
 
-        private void GenerateShadowAndAssertSnapshot(Dictionary<string, PackageDeclaration> packages, string snapshotName)
+        private void GenerateShadowAndAssertSnapshot(string rootPath, string projectPath, Dictionary<string, PackageDeclaration> packages, string snapshotName)
         {
-            var projectPath = "./Lib2/Lib2.csproj";
-            var rootPath = "./Resources";
-
-            var expectedShadowPath = "./Lib2/Lib2.Shadow.csproj";
-            var expectedShadowFullPath = "./Resources/Lib2/Lib2.Shadow.csproj";
-
-            var project = new Project(projectPath);
-            var projects = new Project[] { project };
-            var aggregatorMock = new Mock<IAggregator>();
-            aggregatorMock.SetupGet(a => a.AllProjects).Returns(projects);
-            aggregatorMock.SetupGet(a => a.RootPath).Returns(rootPath);
-            aggregatorMock.SetupGet(a => a.PackageDeclarations).Returns(packages);
-
-            var shadowProjectService = new ShadowProjectService();
-            var shadowPath = shadowProjectService.GenerateShadow(aggregatorMock.Object, project);
-
-            Assert.NotNull(shadowPath);
-            Assert.EndsWith(".Shadow.csproj", shadowPath, StringComparison.InvariantCultureIgnoreCase);
-            Assert.Equal(expectedShadowPath, shadowPath);
-
-            var shadowFullPath = Path.Combine(rootPath, shadowPath);
-            Assert.Equal(Path.GetFullPath(expectedShadowFullPath), Path.GetFullPath(shadowFullPath));
-            Assert.True(File.Exists(shadowFullPath));
+            var shadowFullPath = ShadowProjectHelper.GenerateShadow(rootPath, projectPath, packages);
 
             var snapshotLocation = SnapshotHelper.GetLocationFromCallingCodeProjectRoot("Services");
 

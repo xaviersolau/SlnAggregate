@@ -40,6 +40,12 @@ namespace SoloX.SlnAggregate.Package.Impl
                 "*.nuspec",
                 SearchOption.AllDirectories).ToArray();
 
+            var xmlNsResolver = new NsResolver(
+                new Dictionary<string, string>()
+                {
+                    { "n", "http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd" },
+                });
+
             foreach (var nugetFile in nugetFiles)
             {
                 var nuspecFileName = Path.GetFileNameWithoutExtension(nugetFile);
@@ -51,11 +57,7 @@ namespace SoloX.SlnAggregate.Package.Impl
 
                 var packageId = xmlProj.XPathSelectElements(
                     "/n:package/n:metadata/n:id",
-                    new NsResolver(
-                        new Dictionary<string, string>()
-                        {
-                            { "n", "http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd" },
-                        }))
+                    xmlNsResolver)
                     .SingleOrDefault();
 
                 if (packageId != null)
@@ -67,7 +69,12 @@ namespace SoloX.SlnAggregate.Package.Impl
                 var prj = aggregator.AllProjects.Where(p => p.Name == nugetName || p.Name == nuspecFileName).FirstOrDefault();
                 if (prj != null && !output.ContainsKey(nugetName))
                 {
-                    output.Add(nugetName, new PackageDeclaration(nugetFile, nugetName, new[] { prj }));
+                    var version = xmlProj.XPathSelectElements(
+                        "/n:package/n:metadata/n:version",
+                        xmlNsResolver)
+                        .SingleOrDefault();
+
+                    output.Add(nugetName, new PackageDeclaration(nugetFile, nugetName, version?.Value, new[] { prj }));
                 }
             }
         }
