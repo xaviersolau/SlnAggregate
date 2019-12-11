@@ -4,7 +4,8 @@
     <TargetFramework>netstandard2.0</TargetFramework>
 
     <PackageId>PackageLib1</PackageId>
-    
+    <Version>1.2.3</Version>
+
   </PropertyGroup>
 
 </Project>

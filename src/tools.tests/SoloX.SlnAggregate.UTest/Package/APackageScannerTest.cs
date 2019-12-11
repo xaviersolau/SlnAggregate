@@ -21,6 +21,7 @@ namespace SoloX.SlnAggregate.UTest.Package
         protected static void RunAndAssertScannerTest(
             IPackageScanner scanner,
             string expectedPackageName,
+            string expectedPackageVersion,
             string rootPath,
             params string[] projectPaths)
         {
@@ -39,6 +40,9 @@ namespace SoloX.SlnAggregate.UTest.Package
             Assert.True(scanResult.ContainsKey(expectedPackageName));
 
             var packageEntry = scanResult[expectedPackageName];
+
+            Assert.Equal(expectedPackageVersion, packageEntry.Version);
+
             Assert.Equal(projects.Length, packageEntry.Projects.Count());
 
             foreach (var expectedProject in projects)

@@ -50,7 +50,9 @@ namespace SoloX.SlnAggregate.Package.Impl
 
                 if (!output.ContainsKey(prjName))
                 {
-                    output.Add(prjName, new PackageDeclaration(project.RelativePath, prjName, new[] { project }));
+                    var version = xmlProj.XPathSelectElements("/Project/PropertyGroup/Version").SingleOrDefault();
+
+                    output.Add(prjName, new PackageDeclaration(project.RelativePath, prjName, version?.Value, new[] { project }));
                 }
             }
         }
