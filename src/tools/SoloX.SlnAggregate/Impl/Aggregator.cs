@@ -185,7 +185,7 @@ namespace SoloX.SlnAggregate.Impl
                     slnRepositoryFolder,
                     CsprojFilePattern,
                     SearchOption.AllDirectories)
-                    .Where(p => !this.shadowProjectService.IsShadowProjectFile(p))
+                    .Where(p => !this.shadowProjectService.IsShadowProjectFilePath(p))
                     .ToArray();
 
                 foreach (var prjFile in prjFiles)

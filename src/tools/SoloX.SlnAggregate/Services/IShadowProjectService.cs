@@ -31,6 +31,6 @@ namespace SoloX.SlnAggregate.Services
         /// </summary>
         /// <param name="path">The path to match.</param>
         /// <returns>True if the path match a shadow project file pattern.</returns>
-        bool IsShadowProjectFile(string path);
+        bool IsShadowProjectFilePath(string path);
     }
 }

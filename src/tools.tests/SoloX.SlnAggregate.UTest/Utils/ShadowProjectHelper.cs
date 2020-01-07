@@ -18,20 +18,37 @@ namespace SoloX.SlnAggregate.UTest.Utils
 {
     public static class ShadowProjectHelper
     {
-        public static string GenerateShadow(string rootPath, string projectPath, Dictionary<string, PackageDeclaration> packages)
+        public static IAggregator CreateAggregator(
+            string rootPath,
+            Project project,
+            Dictionary<string, PackageDeclaration> packages)
         {
-            var expectedShadowPath = projectPath.Replace(".csproj", ".Shadow.csproj", StringComparison.InvariantCultureIgnoreCase);
-            var expectedShadowFullPath = rootPath + expectedShadowPath.Replace("./", "/", StringComparison.InvariantCulture);
-
-            var project = new Project(projectPath);
             var projects = new Project[] { project };
             var aggregatorMock = new Mock<IAggregator>();
             aggregatorMock.SetupGet(a => a.AllProjects).Returns(projects);
             aggregatorMock.SetupGet(a => a.RootPath).Returns(rootPath);
             aggregatorMock.SetupGet(a => a.PackageDeclarations).Returns(packages);
 
+            return aggregatorMock.Object;
+        }
+
+        public static string GenerateShadow(string rootPath, string projectPath, Dictionary<string, PackageDeclaration> packages)
+        {
+            var project = new Project(projectPath);
+            var aggregator = CreateAggregator(rootPath, project, packages);
+
+            return GenerateShadow(aggregator, project);
+        }
+
+        public static string GenerateShadow(IAggregator aggregator, Project project)
+        {
+            var rootPath = aggregator.RootPath;
+            var projectPath = project.RelativePath;
+            var expectedShadowPath = projectPath.Replace(".csproj", ".Shadow.csproj", StringComparison.InvariantCultureIgnoreCase);
+            var expectedShadowFullPath = rootPath + expectedShadowPath.Replace("./", "/", StringComparison.InvariantCulture);
+
             var shadowProjectService = new ShadowProjectService();
-            var shadowPath = shadowProjectService.GenerateShadow(aggregatorMock.Object, project);
+            var shadowPath = shadowProjectService.GenerateShadow(aggregator, project);
 
             Assert.NotNull(shadowPath);
             Assert.EndsWith(".Shadow.csproj", shadowPath, StringComparison.InvariantCultureIgnoreCase);

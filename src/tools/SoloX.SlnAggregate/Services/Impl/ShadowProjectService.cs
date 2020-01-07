@@ -21,11 +21,8 @@ namespace SoloX.SlnAggregate.Services.Impl
     /// <summary>
     /// ShadowProjectService implementation that is responsible to generate a shadow project file.
     /// </summary>
-    public class ShadowProjectService : IShadowProjectService
+    public class ShadowProjectService : AShadowProjectService, IShadowProjectService
     {
-        private const string CsprojExt = ".csproj";
-        private const string ShadowCsprojExt = ".Shadow.csproj";
-
         /// <inheritdoc/>
         public string GenerateShadow(IAggregator aggregator, Project csProject)
         {
@@ -40,9 +37,6 @@ namespace SoloX.SlnAggregate.Services.Impl
             }
 
             var path = aggregator.RootPath;
-
-            var shadowPath = csProject.RelativePath.Replace(CsprojExt, ShadowCsprojExt, StringComparison.InvariantCulture);
-            using var shadowStream = File.Create(Path.Combine(path, shadowPath));
 
             using var projectStream = File.OpenRead(Path.Combine(path, csProject.RelativePath));
             var xmlProj = XDocument.Load(projectStream);
@@ -59,6 +53,9 @@ namespace SoloX.SlnAggregate.Services.Impl
             // Setup assembly name
             SetupAssemblyName(csProject, xmlProj);
 
+            var shadowPath = ConvertToShadowProjectFilePath(csProject.RelativePath);
+            using var shadowStream = File.Create(Path.Combine(path, shadowPath));
+
             using var xmlWriter = XmlWriter.Create(shadowStream, new XmlWriterSettings() { Indent = true, });
 
             xmlProj.WriteTo(xmlWriter);
@@ -69,14 +66,9 @@ namespace SoloX.SlnAggregate.Services.Impl
         }
 
         /// <inheritdoc/>
-        public bool IsShadowProjectFile(string path)
+        bool IShadowProjectService.IsShadowProjectFilePath(string path)
         {
-            if (path == null)
-            {
-                throw new ArgumentNullException($"The argument {nameof(path)} must not be null.");
-            }
-
-            return path.EndsWith(ShadowCsprojExt, StringComparison.InvariantCultureIgnoreCase);
+            return IsShadowProjectFilePath(path);
         }
 
         private static void SetupAssemblyName(Project csProject, XDocument xmlProj)
@@ -115,14 +107,16 @@ namespace SoloX.SlnAggregate.Services.Impl
                 if (nugets.TryGetValue(includeValue, out var nugetSpec))
                 {
                     // Replace the package ref with a project ref
+                    var parent = packageReference.Parent;
                     packageReference.Remove();
+                    if (!parent.HasElements)
+                    {
+                        parent.Remove();
+                    }
 
                     foreach (var nugetSpecProject in nugetSpec.Projects)
                     {
-                        var prjPath = nugetSpecProject.RelativePath.Replace(
-                            CsprojExt,
-                            ShadowCsprojExt,
-                            StringComparison.InvariantCulture);
+                        var prjPath = ConvertToShadowProjectFilePath(nugetSpecProject.RelativePath);
 
                         prjPath = Path.GetRelativePath(
                             Path.GetDirectoryName(Path.Combine(path, csProject.RelativePath)),
@@ -160,10 +154,7 @@ namespace SoloX.SlnAggregate.Services.Impl
             {
                 var includeAttr = projectReference.Attribute(XName.Get("Include"));
                 var includeValue = includeAttr.Value;
-                includeAttr.Value = includeValue.Replace(
-                    CsprojExt,
-                    ShadowCsprojExt,
-                    StringComparison.InvariantCulture);
+                includeAttr.Value = ConvertToShadowProjectFilePath(includeValue);
             }
         }
     }
