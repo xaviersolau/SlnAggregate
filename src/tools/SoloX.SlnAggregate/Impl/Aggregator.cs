@@ -26,19 +26,24 @@ namespace SoloX.SlnAggregate.Impl
         private const string CsprojFilePattern = "*.csproj";
 
         private readonly IEnumerable<IPackageScanner> packageScanners;
-        private readonly IShadowProjectService shadowProjectService;
+        private readonly IShadowProjectGenerateService shadowProjectGenerateService;
+        private readonly IShadowProjectPushService shadowProjectPushService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Aggregator"/> class.
         /// </summary>
         /// <param name="packageScanners">The package scanner to use to detect packages.</param>
-        /// <param name="shadowProjectService">The shadow project service to handle the project file generation.</param>
+        /// <param name="shadowProjectGenerateService">The shadow project generate service to handle the project
+        /// file generation.</param>
+        /// <param name="shadowProjectPushService">The shadow project push service to handle the project changes.</param>
         public Aggregator(
             IEnumerable<IPackageScanner> packageScanners,
-            IShadowProjectService shadowProjectService)
+            IShadowProjectGenerateService shadowProjectGenerateService,
+            IShadowProjectPushService shadowProjectPushService)
         {
             this.packageScanners = packageScanners;
-            this.shadowProjectService = shadowProjectService;
+            this.shadowProjectGenerateService = shadowProjectGenerateService;
+            this.shadowProjectPushService = shadowProjectPushService;
         }
 
         /// <inheritdoc/>
@@ -132,6 +137,18 @@ namespace SoloX.SlnAggregate.Impl
             SaveGuidProjectCache(cacheFile, guidProjectCache);
         }
 
+        /// <inheritdoc/>
+        public void PushShadowProjects()
+        {
+            foreach (var csFolder in this.SolutionRepositories)
+            {
+                foreach (var csProject in csFolder.Projects)
+                {
+                    this.shadowProjectPushService.PushShadow(this, csProject);
+                }
+            }
+        }
+
         private static void SaveGuidProjectCache(string cacheFile, IDictionary<string, Guid> guidProjectCache)
         {
             using var fileWriter = File.CreateText(cacheFile);
@@ -156,7 +173,7 @@ namespace SoloX.SlnAggregate.Impl
             Project csProject,
             IDictionary<string, Guid> guidProjectCache)
         {
-            var shadowPath = this.shadowProjectService.GenerateShadow(this, csProject);
+            var shadowPath = this.shadowProjectGenerateService.GenerateShadow(this, csProject);
 
             if (!guidProjectCache.TryGetValue(shadowPath, out var guid))
             {
@@ -185,7 +202,7 @@ namespace SoloX.SlnAggregate.Impl
                     slnRepositoryFolder,
                     CsprojFilePattern,
                     SearchOption.AllDirectories)
-                    .Where(p => !this.shadowProjectService.IsShadowProjectFilePath(p))
+                    .Where(p => !this.shadowProjectGenerateService.IsShadowProjectFilePath(p))
                     .ToArray();
 
                 foreach (var prjFile in prjFiles)

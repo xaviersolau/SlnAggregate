@@ -1,5 +1,5 @@
 ﻿// ----------------------------------------------------------------------
-// <copyright file="RevertShadowProjectService.cs" company="SoloX Software">
+// <copyright file="ShadowProjectPushService.cs" company="SoloX Software">
 // Copyright (c) SoloX Software. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
@@ -20,10 +20,10 @@ namespace SoloX.SlnAggregate.Services.Impl
     /// <summary>
     /// RevertShadowProjectService class to revert a shadow project file back to the original project.
     /// </summary>
-    public class RevertShadowProjectService : AShadowProjectService, IRevertShadowProjectService
+    public class ShadowProjectPushService : AShadowProjectService, IShadowProjectPushService
     {
         /// <inheritdoc/>
-        public string RevertShadow(IAggregator aggregator, Project csProject)
+        public string PushShadow(IAggregator aggregator, Project csProject)
         {
             if (csProject == null)
             {
