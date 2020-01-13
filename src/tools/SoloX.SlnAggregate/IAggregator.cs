@@ -48,5 +48,10 @@ namespace SoloX.SlnAggregate
         /// Generate the aggregated solution.
         /// </summary>
         void GenerateSolution();
+
+        /// <summary>
+        /// Push the shadow projects.
+        /// </summary>
+        void PushShadowProjects();
     }
 }

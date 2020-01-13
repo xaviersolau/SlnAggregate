@@ -47,7 +47,7 @@ namespace SoloX.SlnAggregate.UTest.Utils
             var expectedShadowPath = projectPath.Replace(".csproj", ".Shadow.csproj", StringComparison.InvariantCultureIgnoreCase);
             var expectedShadowFullPath = rootPath + expectedShadowPath.Replace("./", "/", StringComparison.InvariantCulture);
 
-            var shadowProjectService = new ShadowProjectService();
+            var shadowProjectService = new ShadowProjectGenerateService();
             var shadowPath = shadowProjectService.GenerateShadow(aggregator, project);
 
             Assert.NotNull(shadowPath);

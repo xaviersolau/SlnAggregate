@@ -1,5 +1,5 @@
 ﻿// ----------------------------------------------------------------------
-// <copyright file="RevertShadowProjectServiceTest.cs" company="SoloX Software">
+// <copyright file="ShadowProjectPushServiceTest.cs" company="SoloX Software">
 // Copyright (c) SoloX Software. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
@@ -20,7 +20,7 @@ using Xunit;
 
 namespace SoloX.SlnAggregate.UTest.Services
 {
-    public class RevertShadowProjectServiceTest
+    public class ShadowProjectPushServiceTest
     {
         [Fact]
         public void It_should_revert_the_shadow_to_the_original_project_with_package_ref()
@@ -39,9 +39,9 @@ namespace SoloX.SlnAggregate.UTest.Services
             var project = new Project(projectPath);
             var aggregator = ShadowProjectHelper.CreateAggregator(rootPath, project, packages);
 
-            var revertShadowService = new RevertShadowProjectService();
+            var revertShadowService = new ShadowProjectPushService();
 
-            var revertedPath = revertShadowService.RevertShadow(aggregator, project);
+            var revertedPath = revertShadowService.PushShadow(aggregator, project);
 
             var fullPath = Path.Combine(rootPath, revertedPath);
 
@@ -64,9 +64,9 @@ namespace SoloX.SlnAggregate.UTest.Services
             var project = new Project(projectPath);
             var aggregator = ShadowProjectHelper.CreateAggregator(rootPath, project, packages);
 
-            var revertShadowService = new RevertShadowProjectService();
+            var revertShadowService = new ShadowProjectPushService();
 
-            var revertedPath = revertShadowService.RevertShadow(aggregator, project);
+            var revertedPath = revertShadowService.PushShadow(aggregator, project);
 
             var fullPath = Path.Combine(rootPath, revertedPath);
 

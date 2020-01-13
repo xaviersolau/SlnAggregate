@@ -1,5 +1,5 @@
 ﻿// ----------------------------------------------------------------------
-// <copyright file="IShadowProjectService.cs" company="SoloX Software">
+// <copyright file="IShadowProjectGenerateService.cs" company="SoloX Software">
 // Copyright (c) SoloX Software. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
@@ -14,9 +14,9 @@ using SoloX.SlnAggregate.Models;
 namespace SoloX.SlnAggregate.Services
 {
     /// <summary>
-    /// IShadowProjectService interface to generate a shadow project file.
+    /// IShadowProjectGenerateService interface to generate a shadow project file.
     /// </summary>
-    public interface IShadowProjectService
+    public interface IShadowProjectGenerateService
     {
         /// <summary>
         /// Generate the shadow project file form a given project.

@@ -6,6 +6,7 @@
 // ----------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +19,15 @@ namespace SoloX.SlnAggregate
     /// </summary>
     public class Program
     {
+        private const string CliArgPath = "path";
+        private const string CliArgPush = "push";
+
+        private static readonly IReadOnlyDictionary<string, (string key, string value)> ArgAliases
+            = new Dictionary<string, (string, string)>()
+            {
+                [$"-{CliArgPush}"] = ($"--{CliArgPush}", "true"),
+            };
+
         private readonly ILogger<Program> logger;
         private readonly IConfiguration configuration;
 
@@ -50,7 +60,7 @@ namespace SoloX.SlnAggregate
         public static int Main(string[] args)
         {
             var builder = new ConfigurationBuilder();
-            builder.AddCommandLine(args);
+            builder.AddCommandLine(ConvertAliases(args ?? Array.Empty<string>()).ToArray());
             var config = builder.Build();
 
             return new Program(config).Run();
@@ -62,7 +72,9 @@ namespace SoloX.SlnAggregate
         /// <returns>Error code.</returns>
         public int Run()
         {
-            var path = this.configuration.GetValue<string>("path");
+            var path = this.configuration.GetValue<string>(CliArgPath);
+
+            var push = this.configuration.GetValue<bool>(CliArgPush, false);
 
             if (string.IsNullOrEmpty(path))
             {
@@ -74,9 +86,32 @@ namespace SoloX.SlnAggregate
 
             aggregator.Setup(path);
 
-            aggregator.GenerateSolution();
+            if (push)
+            {
+                aggregator.PushShadowProjects();
+            }
+            else
+            {
+                aggregator.GenerateSolution();
+            }
 
             return 0;
+        }
+
+        private static IEnumerable<string> ConvertAliases(string[] args)
+        {
+            foreach (var arg in args)
+            {
+                if (ArgAliases.TryGetValue(arg, out var alias))
+                {
+                    yield return alias.key;
+                    yield return alias.value;
+                }
+                else
+                {
+                    yield return arg;
+                }
+            }
         }
     }
 }

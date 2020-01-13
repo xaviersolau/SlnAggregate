@@ -31,7 +31,7 @@ namespace SoloX.SlnAggregate
         {
             return services
                 .AddTransient<IAggregator, Aggregator>()
-                .AddTransient<IShadowProjectService, ShadowProjectService>()
+                .AddTransient<IShadowProjectGenerateService, ShadowProjectGenerateService>()
                 .AddTransient<IPackageScanner, CsprojScanner>()
                 .AddTransient<IPackageScanner, NuspecScanner>();
         }

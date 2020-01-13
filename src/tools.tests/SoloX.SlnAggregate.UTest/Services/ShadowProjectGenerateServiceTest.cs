@@ -1,5 +1,5 @@
 ﻿// ----------------------------------------------------------------------
-// <copyright file="ShadowProjectServiceTest.cs" company="SoloX Software">
+// <copyright file="ShadowProjectGenerateServiceTest.cs" company="SoloX Software">
 // Copyright (c) SoloX Software. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
@@ -20,7 +20,7 @@ using Xunit;
 
 namespace SoloX.SlnAggregate.UTest.Services
 {
-    public class ShadowProjectServiceTest
+    public class ShadowProjectGenerateServiceTest
     {
         [Fact]
         public void It_should_generate_a_shadow_project_file()

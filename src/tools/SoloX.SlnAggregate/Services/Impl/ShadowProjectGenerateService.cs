@@ -1,5 +1,5 @@
 ﻿// ----------------------------------------------------------------------
-// <copyright file="ShadowProjectService.cs" company="SoloX Software">
+// <copyright file="ShadowProjectGenerateService.cs" company="SoloX Software">
 // Copyright (c) SoloX Software. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
@@ -21,7 +21,7 @@ namespace SoloX.SlnAggregate.Services.Impl
     /// <summary>
     /// ShadowProjectService implementation that is responsible to generate a shadow project file.
     /// </summary>
-    public class ShadowProjectService : AShadowProjectService, IShadowProjectService
+    public class ShadowProjectGenerateService : AShadowProjectService, IShadowProjectGenerateService
     {
         /// <inheritdoc/>
         public string GenerateShadow(IAggregator aggregator, Project csProject)
@@ -66,7 +66,7 @@ namespace SoloX.SlnAggregate.Services.Impl
         }
 
         /// <inheritdoc/>
-        bool IShadowProjectService.IsShadowProjectFilePath(string path)
+        bool IShadowProjectGenerateService.IsShadowProjectFilePath(string path)
         {
             return IsShadowProjectFilePath(path);
         }
