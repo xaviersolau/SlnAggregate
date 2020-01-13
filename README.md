@@ -66,15 +66,17 @@ We are working on a project `MyProject` defined in `MyProjectSolution` that is u
 
 It gives us this working directory structure:
 
-`MyRoot`
- | `MyProjectSolution`
- | | `MyProjectSolution.sln`
- | | `MyProject`
- | | | `MyProject.csproj` (Referencing the nuget `MyNuget`)
- | `MyNugetSolution`
- | | `MyNugetSolution.sln`
- | | `MyNuget`
- | | | `MyNuget.csproj` (Defining the nuget `MyNuget`)
+```bash
+MyRoot
+ | MyProjectSolution
+ | | MyProjectSolution.sln
+ | | MyProject
+ | | | MyProject.csproj # Referencing the nuget MyNuget
+ | MyNugetSolution
+ | | MyNugetSolution.sln
+ | | MyNuget
+ | | | MyNuget.csproj # Defining the nuget MyNuget
+```
 
 The SlnAggregate tool will generate a global solution file `MyRoot.sln` referencing the projects through "shadow"
 project files. Those "shadow" files are in fact the project images modified in a way that the package references
@@ -82,18 +84,20 @@ are replaced when possible by the corresponding project references.
 
 The result of this generation will give us this structure:
 
-`MyRoot`
- | `MyRoot.sln` (Generated)
- | `MyProjectSolution`
- | | `MyProjectSolution.sln`
- | | `MyProject`
- | | | `MyProject.csproj` (Referencing the nuget `MyNuget`)
- | | | `MyProject.Shadow.csproj` (Generated) (Referencing the project `MyNuget.Shadow.csproj`)
- | `MyNugetSolution`
- | | `MyNugetSolution.sln`
- | | `MyNuget`
- | | | `MyNuget.csproj` (Defining the nuget `MyNuget` and referenced by `MyProject.csproj`)
- | | | `MyNuget.Shadow.csproj` (Generated) (Referenced by `MyProject.Shadow.csproj`)
+```bash
+MyRoot
+ | MyRoot.sln (Generated)
+ | MyProjectSolution
+ | | MyProjectSolution.sln
+ | | MyProject
+ | | | MyProject.csproj # Referencing the nuget MyNuget
+ | | | MyProject.Shadow.csproj # (Generated) Referencing the project MyNuget.Shadow.csproj
+ | MyNugetSolution
+ | | MyNugetSolution.sln
+ | | MyNuget
+ | | | MyNuget.csproj # Defining the nuget MyNuget and referenced by MyProject.csproj
+ | | | MyNuget.Shadow.csproj # (Generated) Referenced by MyProject.Shadow.csproj
+```
 
  It is now possible to open the `MyRoot.sln` and to work on the projects as if they were defined in the same solution
  from the beginning.
