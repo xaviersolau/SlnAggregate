@@ -17,6 +17,8 @@
     <AssemblyName>dotnet-SlnAggregate</AssemblyName>
 
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackAsTool>true</PackAsTool>
+
   </PropertyGroup>
 
   <ItemGroup>

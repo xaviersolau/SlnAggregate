@@ -32,7 +32,7 @@ Or using the dotnet tool install command:
 dotnet tool install -g SoloX.SlnAggregate --version 1.0.0-alpha.2
 
 # or in a specific 'target' folder
-dotnet tool install SoloX.SlnAggregate --version 1.0.0-alpha.2 --tool-path target
+dotnet tool install SoloX.SlnAggregate --version 1.0.0-alpha --tool-path target
 ```
 
 ## How to use it
