@@ -18,6 +18,7 @@
 
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackAsTool>true</PackAsTool>
+    <ToolCommandName>SlnAggregate</ToolCommandName>
 
   </PropertyGroup>
 
