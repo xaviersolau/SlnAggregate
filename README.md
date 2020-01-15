@@ -21,7 +21,7 @@ You can checkout this Github repository or you can use the NuGet package:
 
 **Install editing your project file (csproj):**
 ```xml
-<DotNetCliToolReference Include="SoloX.SlnAggregate" Version="1.0.0-alpha.2" />
+<DotNetCliToolReference Include="SoloX.SlnAggregate" Version="1.0.0-alpha.3" />
 ```
 
 Or using the dotnet tool install command:
@@ -29,10 +29,10 @@ Or using the dotnet tool install command:
 **Install with dotnet:**
 ```bash
 # Install globally:
-dotnet tool install -g SoloX.SlnAggregate --version 1.0.0-alpha.2
+dotnet tool install -g SoloX.SlnAggregate --version 1.0.0-alpha.3
 
 # or in a specific 'target' folder
-dotnet tool install SoloX.SlnAggregate --version 1.0.0-alpha --tool-path target
+dotnet tool install SoloX.SlnAggregate --version 1.0.0-alpha.3 --tool-path target
 ```
 
 ## How to use it
