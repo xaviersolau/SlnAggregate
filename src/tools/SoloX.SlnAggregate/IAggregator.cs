@@ -42,7 +42,8 @@ namespace SoloX.SlnAggregate
         /// Setup the Aggregator with the given root folder.
         /// </summary>
         /// <param name="rootPath">The root folder where to find solution assets.</param>
-        void Setup(string rootPath);
+        /// <param name="folders">optional list of sub folders to aggregate, by default all folders will be aggregated.</param>
+        void Setup(string rootPath, string[] folders = null);
 
         /// <summary>
         /// Generate the aggregated solution.

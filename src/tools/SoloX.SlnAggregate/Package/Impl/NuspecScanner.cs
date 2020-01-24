@@ -52,7 +52,7 @@ namespace SoloX.SlnAggregate.Package.Impl
                 var nugetName = nuspecFileName;
 
                 using var nugetFileStream = File.OpenRead(nugetFile);
-                var xmlReader = XmlReader.Create(nugetFileStream);
+                using var xmlReader = XmlReader.Create(nugetFileStream);
                 var xmlProj = XDocument.Load(xmlReader);
 
                 var packageId = xmlProj.XPathSelectElements(
