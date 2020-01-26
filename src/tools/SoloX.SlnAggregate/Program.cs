@@ -32,27 +32,20 @@ namespace SoloX.SlnAggregate
 
         private readonly ILogger<Program> logger;
         private readonly IConfiguration configuration;
+        private readonly IAggregator aggregator;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Program"/> class.
         /// </summary>
         /// <param name="configuration">The configuration that contains all arguments.</param>
-        public Program(IConfiguration configuration)
+        /// <param name="aggregator">Aggregator to use to build aggregated solution.</param>
+        /// <param name="logger">Logger to use for logging.</param>
+        public Program(IConfiguration configuration, IAggregator aggregator, ILogger<Program> logger)
         {
             this.configuration = configuration;
-
-            IServiceCollection sc = new ServiceCollection();
-
-            sc.AddLogging(b => b.AddConsole());
-            sc.AddSingleton(configuration);
-            sc.AddSlnAggregate();
-
-            this.Service = sc.BuildServiceProvider();
-
-            this.logger = this.Service.GetService<ILogger<Program>>();
+            this.aggregator = aggregator;
+            this.logger = logger;
         }
-
-        private ServiceProvider Service { get; }
 
         /// <summary>
         /// Main program entry point.
@@ -63,9 +56,11 @@ namespace SoloX.SlnAggregate
         {
             var builder = new ConfigurationBuilder();
             builder.AddCommandLine(ConvertAliases(args ?? Array.Empty<string>()).ToArray());
-            var config = builder.Build();
+            var configuration = builder.Build();
 
-            return new Program(config).Run();
+            using var service = Program.CreateServiceProvider(configuration);
+
+            return service.GetService<Program>().Run();
         }
 
         /// <summary>
@@ -74,6 +69,7 @@ namespace SoloX.SlnAggregate
         /// <returns>Error code.</returns>
         public int Run()
         {
+            this.logger.LogInformation($"Processing Sln aggregate.");
             var path = this.configuration.GetValue<string>(CliArgPath);
 
             var push = this.configuration.GetValue<bool>(CliArgPush, false);
@@ -88,20 +84,30 @@ namespace SoloX.SlnAggregate
                 return -1;
             }
 
-            var aggregator = this.Service.GetService<IAggregator>();
-
-            aggregator.Setup(path, folders.Any() ? folders : null);
+            this.aggregator.Setup(path, folders.Any() ? folders : null);
 
             if (push)
             {
-                aggregator.PushShadowProjects();
+                this.aggregator.PushShadowProjects();
             }
             else
             {
-                aggregator.GenerateSolution();
+                this.aggregator.GenerateSolution();
             }
 
             return 0;
+        }
+
+        private static ServiceProvider CreateServiceProvider(IConfiguration configuration)
+        {
+            IServiceCollection sc = new ServiceCollection();
+
+            sc.AddLogging(b => b.AddConsole(options => options.LogToStandardErrorThreshold = LogLevel.Warning));
+            sc.AddSingleton(configuration);
+            sc.AddSlnAggregate();
+            sc.AddTransient<Program>();
+
+            return sc.BuildServiceProvider();
         }
 
         private static IEnumerable<string> ConvertAliases(string[] args)
