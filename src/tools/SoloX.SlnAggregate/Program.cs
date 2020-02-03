@@ -9,9 +9,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using CommandLine;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SoloX.SlnAggregate.Commands;
 
 namespace SoloX.SlnAggregate
 {
@@ -20,29 +22,16 @@ namespace SoloX.SlnAggregate
     /// </summary>
     public class Program
     {
-        private const string CliArgPath = "path";
-        private const string CliArgPush = "push";
-        private const string CliArgList = "folders";
-
-        private static readonly IReadOnlyDictionary<string, (string key, string value)> ArgAliases
-            = new Dictionary<string, (string, string)>()
-            {
-                [$"-{CliArgPush}"] = ($"--{CliArgPush}", "true"),
-            };
-
         private readonly ILogger<Program> logger;
-        private readonly IConfiguration configuration;
         private readonly IAggregator aggregator;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Program"/> class.
         /// </summary>
-        /// <param name="configuration">The configuration that contains all arguments.</param>
         /// <param name="aggregator">Aggregator to use to build aggregated solution.</param>
         /// <param name="logger">Logger to use for logging.</param>
-        public Program(IConfiguration configuration, IAggregator aggregator, ILogger<Program> logger)
+        public Program(IAggregator aggregator, ILogger<Program> logger)
         {
-            this.configuration = configuration;
             this.aggregator = aggregator;
             this.logger = logger;
         }
@@ -55,45 +44,57 @@ namespace SoloX.SlnAggregate
         public static int Main(string[] args)
         {
             var builder = new ConfigurationBuilder();
-            builder.AddCommandLine(ConvertAliases(args ?? Array.Empty<string>()).ToArray());
+            builder.AddInMemoryCollection();
             var configuration = builder.Build();
 
             using var service = Program.CreateServiceProvider(configuration);
 
-            return service.GetService<Program>().Run();
+            return Parser.Default
+                .ParseArguments<AggregateOptions, PushOptions>(args)
+                .MapResult(
+                    (AggregateOptions opt) => service.GetService<Program>().Run(opt),
+                    (PushOptions opt) => service.GetService<Program>().Run(opt),
+                    (err) => -1);
         }
 
         /// <summary>
-        /// Run the tools command.
+        /// Run the push command.
         /// </summary>
+        /// <param name="opt">Push options.</param>
         /// <returns>Error code.</returns>
-        public int Run()
+        public int Run(PushOptions opt)
         {
-            this.logger.LogInformation($"Processing Sln aggregate.");
-            var path = this.configuration.GetValue<string>(CliArgPath);
+            this.logger.LogInformation($"Processing push command.");
 
-            var push = this.configuration.GetValue<bool>(CliArgPush, false);
-
-            var folders = this.configuration
-                .GetValue(CliArgList, string.Empty)
-                .Split(',', ';');
-
-            if (string.IsNullOrEmpty(path))
+            if (opt == null)
             {
-                this.logger.LogError($"Missing path parameter.");
-                return -1;
+                throw new ArgumentNullException(nameof(opt));
             }
 
-            this.aggregator.Setup(path, folders.Any() ? folders : null);
+            this.Setup(opt);
 
-            if (push)
+            this.aggregator.PushShadowProjects();
+
+            return 0;
+        }
+
+        /// <summary>
+        /// Run the aggregate command.
+        /// </summary>
+        /// <param name="opt">Aggregate options.</param>
+        /// <returns>Error code.</returns>
+        public int Run(AggregateOptions opt)
+        {
+            this.logger.LogInformation($"Processing aggregate command.");
+
+            if (opt == null)
             {
-                this.aggregator.PushShadowProjects();
+                throw new ArgumentNullException(nameof(opt));
             }
-            else
-            {
-                this.aggregator.GenerateSolution();
-            }
+
+            this.Setup(opt);
+
+            this.aggregator.GenerateSolution();
 
             return 0;
         }
@@ -110,20 +111,9 @@ namespace SoloX.SlnAggregate
             return sc.BuildServiceProvider();
         }
 
-        private static IEnumerable<string> ConvertAliases(string[] args)
+        private void Setup(IOptions opt)
         {
-            foreach (var arg in args)
-            {
-                if (ArgAliases.TryGetValue(arg, out var alias))
-                {
-                    yield return alias.key;
-                    yield return alias.value;
-                }
-                else
-                {
-                    yield return arg;
-                }
-            }
+            this.aggregator.Setup(opt.Path, opt.Filters.Any() ? opt.Filters : null);
         }
     }
 }
