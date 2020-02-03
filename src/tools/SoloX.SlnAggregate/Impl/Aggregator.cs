@@ -59,7 +59,7 @@ namespace SoloX.SlnAggregate.Impl
         public IReadOnlyDictionary<string, PackageDeclaration> PackageDeclarations { get; private set; }
 
         /// <inheritdoc/>
-        public void Setup(string rootPath, string[] folders = null)
+        public void Setup(string rootPath, IEnumerable<string> folders = null)
         {
             if (rootPath == null)
             {
@@ -185,7 +185,7 @@ namespace SoloX.SlnAggregate.Impl
             return new Project(shadowPath, guid);
         }
 
-        private List<SolutionRepository> LoadSolutionRepositories(string[] folders)
+        private List<SolutionRepository> LoadSolutionRepositories(IEnumerable<string> folders)
         {
             var slnRepositoryFolders = Directory.EnumerateDirectories(
                 this.RootPath,

@@ -40,15 +40,17 @@ dotnet tool install SoloX.SlnAggregate --version 1.0.0-alpha.4 --tool-path targe
 In order to generate the shadow files, you will need to type:
 
 ```bash
-SlnAggregate --path YourSolutionRootPath
+SlnAggregate aggregate YourSolutionRootPath
+or you can filter the folders you work on:
+SlnAggregate aggregate YourSolutionRootPath --filters path1;path2;path3
 ```
 
 Once your changes are done, you can push your changes back to the original project files:
 
 ```bash
-SlnAggregate --path YourSolutionRootPath -push
-or
-SlnAggregate --path YourSolutionRootPath --push true
+SlnAggregate push YourSolutionRootPath
+or you can filter the folders you work on:
+SlnAggregate push YourSolutionRootPath --filters path1;path2;path3
 ```
 
 ### The use case

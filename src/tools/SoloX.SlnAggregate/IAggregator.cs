@@ -43,7 +43,7 @@ namespace SoloX.SlnAggregate
         /// </summary>
         /// <param name="rootPath">The root folder where to find solution assets.</param>
         /// <param name="folders">optional list of sub folders to aggregate, by default all folders will be aggregated.</param>
-        void Setup(string rootPath, string[] folders = null);
+        void Setup(string rootPath, IEnumerable<string> folders = null);
 
         /// <summary>
         /// Generate the aggregated solution.
