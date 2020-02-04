@@ -26,7 +26,7 @@ namespace SoloX.SlnAggregate.Models
         {
             this.RelativePath = path;
             this.Id = Guid.NewGuid();
-            this.Name = Path.GetFileNameWithoutExtension(this.RelativePath);
+            this.Name = Path.GetFileName(this.RelativePath);
             this.Projects = projects;
         }
 
