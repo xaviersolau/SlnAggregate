@@ -119,6 +119,32 @@ namespace SoloX.SlnAggregate.ITest
                 StringComparison.InvariantCulture);
         }
 
+        [Fact]
+        public void It_should_generate_the_aggregated_sln_file_with_the_folders_matching_the_sub_directory_names()
+        {
+            Guid folderId = Guid.Empty;
+            TestWithAggregator(aggregator =>
+            {
+                aggregator.Setup(@"Resources/RootSln2");
+
+                folderId = aggregator.SolutionRepositories.Single().Id;
+
+                aggregator.GenerateSolution();
+            });
+
+            Assert.True(File.Exists(@"Resources/RootSln2/RootSln2.sln"));
+            Assert.True(File.Exists(@"Resources/RootSln2/RootSln2.guid.cache"));
+            Assert.True(File.Exists(@"Resources/RootSln2/Sln.Lib.1/My.Package.Lib.1/My.Package.Lib.1.Shadow.csproj"));
+
+            string sln = File.ReadAllText(@"Resources/RootSln2/RootSln2.sln");
+
+            Assert.Contains(
+                $@"Project(""{{2150E333-8FDC-42A3-9474-1A3956D46DE8}}"") = ""Sln.Lib.1"", ""Sln.Lib.1"", ""{{{folderId}}}""
+EndProject",
+                sln,
+                StringComparison.InvariantCulture);
+        }
+
         private static void TestWithAggregator(Action<IAggregator> test)
         {
             IServiceCollection sc = new ServiceCollection();
