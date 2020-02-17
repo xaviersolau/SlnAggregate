@@ -145,6 +145,20 @@ EndProject",
                 StringComparison.InvariantCulture);
         }
 
+        [Fact]
+        public void It_should_generate_the_aggregated_sln_file_with_the_filtered_sub_projects()
+        {
+            TestWithAggregator(aggregator =>
+            {
+                aggregator.Setup(@"Resources/RootSln3", new[] { "SlnLib1" });
+
+                aggregator.GenerateSolution();
+            });
+
+            Assert.True(File.Exists(@"Resources/RootSln3/SlnLib1/Lib1/Lib1.Shadow.csproj"));
+            Assert.False(File.Exists(@"Resources/RootSln3/SlnLib2/Lib2/Lib2.Shadow.csproj"));
+        }
+
         private static void TestWithAggregator(Action<IAggregator> test)
         {
             IServiceCollection sc = new ServiceCollection();
