@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Lib4</RootNamespace>
+    <AssemblyName>Lib4</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Lib1/Lib1.Shadow.csproj" />
+    <ProjectReference Include="../Lib2/Lib2.Shadow.csproj" />
+    <ProjectReference Include="../Lib3/Lib3.Shadow.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Another.Package" Version="1.2.3" />
+  </ItemGroup>
+</Project>

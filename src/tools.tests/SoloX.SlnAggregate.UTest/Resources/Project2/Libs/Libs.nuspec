@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <metadata>
+        <!-- Required elements-->
+        <id>PackageLibs</id>
+        <version>1.2.3</version>
+        <description></description>
+        <authors></authors>
+
+        <!-- Optional elements -->
+        <!-- ... -->
+    </metadata>
+    <!-- Optional 'files' node -->
+    <files>
+        <file src="Lib1\bin\$configuration$\netstandard2.1\Lib1.dll" target="lib/netstandard2.1" />
+        <file src="Lib2\bin\$configuration$\netstandard2.1\Lib2.dll" target="lib/netstandard2.1" />
+    </files>
+</package>
