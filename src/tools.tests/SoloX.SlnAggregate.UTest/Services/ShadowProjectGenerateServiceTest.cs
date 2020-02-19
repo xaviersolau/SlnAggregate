@@ -26,7 +26,7 @@ namespace SoloX.SlnAggregate.UTest.Services
         public void It_should_generate_a_shadow_project_file()
         {
             var projectPath = "./Lib2/Lib2.csproj";
-            var rootPath = "./Resources";
+            var rootPath = "./Resources/Project1";
 
             var snapshotName = nameof(this.It_should_generate_a_shadow_project_file);
             var packages = new Dictionary<string, PackageDeclaration>();
@@ -38,7 +38,7 @@ namespace SoloX.SlnAggregate.UTest.Services
         public void It_should_generate_a_shadow_project_file_with_package_replacement()
         {
             var projectPath = "./Lib2/Lib2.csproj";
-            var rootPath = "./Resources";
+            var rootPath = "./Resources/Project1";
 
             var snapshotName = nameof(this.It_should_generate_a_shadow_project_file_with_package_replacement);
             var packages = new Dictionary<string, PackageDeclaration>();
@@ -48,6 +48,32 @@ namespace SoloX.SlnAggregate.UTest.Services
             var packageProject = new Project(packageProjectPath);
 
             packages.Add(packageId, new PackageDeclaration(packageProjectPath, packageId, "1.0.0", new Project[] { packageProject }));
+
+            this.GenerateShadowAndAssertSnapshot(rootPath, projectPath, packages, snapshotName);
+        }
+
+        [Fact]
+        public void It_should_generate_a_shadow_project_file_with_multi_projects_package_replacement()
+        {
+            var projectPath = "./Lib3/Lib3.csproj";
+            var rootPath = "./Resources/Project3";
+
+            var snapshotName = nameof(this.It_should_generate_a_shadow_project_file_with_multi_projects_package_replacement);
+            var packages = new Dictionary<string, PackageDeclaration>();
+
+            var packageId = "PackageLibs";
+            var packageProjectPath1 = "./Libs/Lib1/Lib1.csproj";
+            var packageProjectPath2 = "./Libs/Lib2/Lib2.csproj";
+            var packageProject1 = new Project(packageProjectPath1);
+            var packageProject2 = new Project(packageProjectPath2);
+
+            packages.Add(
+                packageId,
+                new PackageDeclaration(
+                    "./Libs/Libs.nuspec",
+                    packageId,
+                    "1.0.0",
+                    new Project[] { packageProject1, packageProject2 }));
 
             this.GenerateShadowAndAssertSnapshot(rootPath, projectPath, packages, snapshotName);
         }

@@ -8,16 +8,32 @@
 
   <ItemGroup>
     <None Remove="Resources\Lib1.nuspec" />
+    <None Remove="Resources\Project1\Lib1\Libs.nuspec" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Resources\Lib1\Lib1.nuspec">
+    <Content Include="Resources\Project2\Libs\Libs.nuspec">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Resources\Lib1\Lib1.csproj">
+    <Content Include="Resources\Project1\Lib1\Lib1.nuspec">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Resources\Lib2\Lib2.csproj">
+    <Content Include="Resources\Project1\Lib1\Lib1.csproj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Project1\Lib2\Lib2.csproj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Project3\Lib3\Lib3.csproj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Project3\Libs\Lib1\Lib1.csproj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Project3\Libs\Lib2\Lib2.csproj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Shadow\Lib4.Shadow.csproj">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resources\Shadow\Lib3.Shadow.csproj">

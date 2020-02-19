@@ -54,6 +54,47 @@ namespace SoloX.SlnAggregate.UTest.Services
         }
 
         [Fact]
+        public void It_should_revert_the_shadow_to_the_original_project_with_multi_project_package_ref()
+        {
+            var projectPath = "./Shadow/Lib4.csproj";
+            var rootPath = "./Resources";
+
+            var packages = new Dictionary<string, PackageDeclaration>();
+
+            var packageId = "PackageLib123";
+            var packageProjects = new Project[]
+            {
+                new Project("./Lib1/Lib1.csproj"),
+                new Project("./Lib2/Lib2.csproj"),
+                new Project("./Lib3/Lib3.csproj"),
+            };
+
+            packages.Add(
+                packageId,
+                new PackageDeclaration(
+                    "pkg.nuspec",
+                    packageId,
+                    "3.2.1",
+                    packageProjects));
+
+            var project = new Project(projectPath);
+            var aggregator = ShadowProjectHelper.CreateAggregator(rootPath, project, packages);
+
+            var revertShadowService = new ShadowProjectPushService();
+
+            var revertedPath = revertShadowService.PushShadow(aggregator, project);
+
+            var fullPath = Path.Combine(rootPath, revertedPath);
+
+            var snapshotLocation = SnapshotHelper.GetLocationFromCallingCodeProjectRoot("Services");
+
+            SnapshotHelper.AssertSnapshot(
+                File.ReadAllText(fullPath),
+                nameof(this.It_should_revert_the_shadow_to_the_original_project_with_multi_project_package_ref),
+                snapshotLocation);
+        }
+
+        [Fact]
         public void It_should_revert_the_shadow_to_the_original_project_with_project_ref()
         {
             var projectPath = "./Shadow/Lib3.csproj";

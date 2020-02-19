@@ -76,6 +76,46 @@ namespace SoloX.SlnAggregate.Package.Impl
 
                     output.Add(nugetName, new PackageDeclaration(nugetFile, nugetName, version?.Value, new[] { prj }));
                 }
+                else
+                {
+                    // Scan files elements.
+                    var fileElements = xmlProj.XPathSelectElements(
+                        "/n:package/n:files/n:file",
+                        xmlNsResolver);
+
+                    var projects = new List<Project>();
+
+                    foreach (var fileElement in fileElements)
+                    {
+                        var srcAttribute = fileElement.Attributes().SingleOrDefault(a => a.Name.LocalName == "src");
+                        var targetAttribute = fileElement.Attributes().SingleOrDefault(a => a.Name.LocalName == "target");
+                        if (srcAttribute != null && targetAttribute != null)
+                        {
+                            var src = srcAttribute.Value;
+                            var target = targetAttribute.Value;
+                            if (target.StartsWith("lib", StringComparison.InvariantCultureIgnoreCase) &&
+                                src.EndsWith(".dll", StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                var assemblyName = Path.GetFileNameWithoutExtension(src);
+                                var assemblyPrj = aggregator.AllProjects.Where(p => p.Name == assemblyName).FirstOrDefault();
+                                if (assemblyPrj != null)
+                                {
+                                    projects.Add(assemblyPrj);
+                                }
+                            }
+                        }
+                    }
+
+                    if (projects.Any() && !output.ContainsKey(nugetName))
+                    {
+                        var version = xmlProj.XPathSelectElements(
+                            "/n:package/n:metadata/n:version",
+                            xmlNsResolver)
+                            .SingleOrDefault();
+
+                        output.Add(nugetName, new PackageDeclaration(nugetFile, nugetName, version?.Value, projects));
+                    }
+                }
             }
         }
 

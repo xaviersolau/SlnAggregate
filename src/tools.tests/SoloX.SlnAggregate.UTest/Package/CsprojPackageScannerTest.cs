@@ -22,7 +22,7 @@ namespace SoloX.SlnAggregate.UTest.Package
         {
             var scanner = new CsprojScanner();
 
-            RunAndAssertScannerTest(scanner, "PackageLib1", "1.2.3", "./Resources", "./Lib1/Lib1.csproj");
+            RunAndAssertScannerTest(scanner, "PackageLib1", "1.2.3", "./Resources/Project1", "./Lib1/Lib1.csproj");
         }
     }
 }

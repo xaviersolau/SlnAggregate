@@ -22,7 +22,15 @@ namespace SoloX.SlnAggregate.UTest.Package
         {
             var scanner = new NuspecScanner();
 
-            RunAndAssertScannerTest(scanner, "PackageLib1", "1.2.3", "./Resources", "./Lib1/Lib1.csproj");
+            RunAndAssertScannerTest(scanner, "PackageLib1", "1.2.3", "./Resources/Project1", "./Lib1/Lib1.csproj");
+        }
+
+        [Fact]
+        public void It_should_find_the_package_referencing_projects_from_the_nuspec_file()
+        {
+            var scanner = new NuspecScanner();
+
+            RunAndAssertScannerTest(scanner, "PackageLibs", "1.2.3", "./Resources/Project2", "./Lib1/Lib1.csproj", "./Lib2/Lib2.csproj");
         }
     }
 }
