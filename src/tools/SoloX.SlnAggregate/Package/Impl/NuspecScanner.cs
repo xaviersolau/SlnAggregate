@@ -96,6 +96,7 @@ namespace SoloX.SlnAggregate.Package.Impl
                             if (target.StartsWith("lib", StringComparison.InvariantCultureIgnoreCase) &&
                                 src.EndsWith(".dll", StringComparison.InvariantCultureIgnoreCase))
                             {
+                                src = src.Replace("\\", "/", StringComparison.InvariantCulture);
                                 var assemblyName = Path.GetFileNameWithoutExtension(src);
                                 var assemblyPrj = aggregator.AllProjects.Where(p => p.Name == assemblyName).FirstOrDefault();
                                 if (assemblyPrj != null)
