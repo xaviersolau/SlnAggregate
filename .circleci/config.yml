@@ -27,12 +27,25 @@ jobs:
           name: Run Unit Tests
           command: |
             cd src/tools.tests/SoloX.SlnAggregate.UTest
-            dotnet test -c Release --no-build
+            dotnet test -c Release --no-build --logger trx --results-directory ../../../TestResults
             cd ../../..
 
             cd src/tools.tests/SoloX.SlnAggregate.ITest
-            dotnet test -c Release --no-build
+            dotnet test -c Release --no-build --logger trx --results-directory ../../../TestResults
             cd ../../..
+
+      - run:
+          name: Publish test results
+          when: always
+          command: |
+            dotnet tool install trx2junit --tool-path trx2junit
+            trx2junit/trx2junit TestResults/*.trx
+
+      - store_test_results:
+          path: TestResults
+      - store_artifacts:
+          path: TestResults
+          destination: TestResults
 
       - run:
           name: Run Code coverage
@@ -51,6 +64,7 @@ jobs:
             coveralls/csmacnz.Coveralls --opencover -i coverage/result.opencover.xml --repoToken $COVERALLS_REPO_TOKEN --useRelativePaths --commitId $CIRCLE_SHA1 --commitBranch $CIRCLE_BRANCH --commitAuthor $CIRCLE_USERNAME --jobId $CIRCLE_BUILD_NUM --serviceName circleci
       - store_artifacts:
           path: coverage
+
       - run:
           name: Generate packages
           command: |
